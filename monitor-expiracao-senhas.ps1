@@ -29,7 +29,7 @@ param(
     [string]$ColunaUsuario = "USUARIO"
 )
 
-# Limites (em dias) para classificar a situação da senha
+
 $LimiteCritico = 7
 $LimiteAtencao = 15
 
@@ -43,7 +43,7 @@ function Obter-ExpiracaoSenha {
 
         if ($LASTEXITCODE -ne 0) { return $null }
 
-        # Funciona com Windows em português ou inglês
+        
         $Linha = $Consulta | Where-Object {
             $_ -match "A senha expira" -or $_ -match "Password expires"
         }
@@ -68,7 +68,6 @@ function Obter-Status {
     else                                       { return "OK"       }
 }
 
-# --- Validação e backup ------------------------------------------------------
 
 if (-not (Test-Path $Arquivo)) {
     Write-Host "`nArquivo nao encontrado: $Arquivo" -ForegroundColor Red
@@ -83,13 +82,13 @@ if (-not (Test-Path $PastaBackup)) {
 $Backup = Join-Path $PastaBackup ("Backup_{0}.csv" -f (Get-Date -Format "dd-MM-yy-HH-mm"))
 Copy-Item -Path $Arquivo -Destination $Backup -Force
 
-# --- Leitura dos usuários ----------------------------------------------------
+
 
 $Usuarios = Import-Csv $Arquivo -Delimiter ";" | Where-Object {
     $_.$ColunaUsuario -and $_.$ColunaUsuario.Trim() -ne ""
 }
 
-# --- Consulta de cada usuário ------------------------------------------------
+
 
 $Resultado  = @()
 $Consultados = 0
@@ -115,7 +114,7 @@ foreach ($Item in $Usuarios) {
     $NovaData      = $DataExpiracao.ToString("dd/MM/yyyy")
     $DiasRestantes = ($DataExpiracao.Date - (Get-Date).Date).Days
 
-    # Cria ou atualiza as colunas de controle no CSV
+    
     $Item | Add-Member -NotePropertyName "DATA DE EXPIRACAO" -NotePropertyValue $NovaData -Force
     $Item | Add-Member -NotePropertyName "UltimaConsulta" -NotePropertyValue (Get-Date -Format "dd/MM/yyyy HH:mm") -Force
 
@@ -129,7 +128,6 @@ foreach ($Item in $Usuarios) {
     }
 }
 
-# --- Grava o CSV (via arquivo temporário, para não corromper o original) -----
 
 $TempFile = "$Arquivo.tmp"
 
@@ -144,7 +142,7 @@ catch {
     Exit
 }
 
-# --- Relatório ---------------------------------------------------------------
+
 
 $Resultado = $Resultado | Sort-Object Dias
 
